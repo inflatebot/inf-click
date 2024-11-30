@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<audio id="pop1" src="res/sfx/pop1.mp3"></audio>
+<audio id="pop2" src="res/sfx/pop2.mp3"></audio>
+<audio id="pressure1" src="res/sfx/pressure1.mp3"></audio>
+<audio id="pressure2" src="res/sfx/pressure2.mp3"></audio>
+<audio id="settle1" src="res/sfx/pressure1.mp3"></audio>
+<audio id="settle2" src="res/sfx/pressure2.mp3"></audio>
+<audio id="pump1" src="res/sfx/pump1.mp3"></audio>
+<audio id="pump2" src="res/sfx/pump2.mp3"></audio>
+
+<head>
+    <title>Belly Inflation Simulator</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h1>Belly Inflation Clicker</h1>
+    <div id="pressureBar">
+        <div id="pressureFill"></div>
+    </div>
+    <button id="airButton" onclick="pumpAir()">Pump Air</button>
+    <p>Belly Size: <span id="bellySize">100</span></p>
+    <p>Belly Growth: <span id="bellyGrowth">0</span></p>
+    <p>Record Size: <span id="recordSize">100</span> </p>
+    <p>Record Growth: <span id="recordGrowth">0</span> </p>
+    <p id="message"></p>
+    <script src="script.js"></script>
+</body>
+</html>
