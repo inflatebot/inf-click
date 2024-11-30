@@ -1,7 +1,7 @@
 const soundEffects = {
     pop: [new Audio('res/sfx/pop1.wav'), new Audio('res/sfx/pop2.wav')],
-    pressure: [new Audio('res/sfx/pressure1.mp3'), new Audio('res/sfx/pressure2.mp3')],
-    settle: [new Audio('res/sfx/settle.mp3'), new Audio('res/sfx/settle.mp3')],
+    pressure: [new Audio('res/sfx/pressure1.wav'), new Audio('res/sfx/pressure2.wav')],
+    settle: [new Audio('res/sfx/settle1.mp3'), new Audio('res/sfx/settle2.mp3')],
     pump: [new Audio('res/sfx/pump1.wav'), new Audio('res/sfx/pump2.wav')]
 };
 
@@ -32,9 +32,9 @@ const player = {
     playerMoney: 0
 };
 const pump = {
-    pumpStaticPressure: 10,
-    pumpPressureDecayRate: 3,
-    pumpStrokeVolume: 10
+    pumpStaticPressure: 5,
+    pumpPressureDecayRate: 1,
+    pumpStrokeVolume: 5
 }
 const bellySizeDisplay = document.getElementById('bellySize');
 const bellyGrowthDisplay = document.getElementById('bellyGrowth');
@@ -59,6 +59,8 @@ function pumpAir() {
     playRandomSoundEffect(getSoundEffect('pump'));
 }
 
+let previousPressure = 0;
+let previousBellySize = player.bellyMinSize; //initialize
 // Pressure decay over time (using pump.pumpPressureDecayRate)
 setInterval(() => {
     if (player.pressure > 0) {
@@ -67,6 +69,33 @@ setInterval(() => {
             messageDisplay.textContent = "";
         }
         updatePressureBar();
+        //Pressure Threshold checks
+        const pressureLevel = Math.floor(player.pressure / 20); //0-4
+        const previousPressureLevel = Math.floor(previousPressure /20);
+
+        if(pressureLevel > previousPressureLevel){
+            //Crossed Threshold going up. Fire event for pressureLevel
+            messageDisplay.textContent = `Pressure Level Increased: ${pressureLevel}`;
+            playRandomSoundEffect(getSoundEffect('pressure'));
+        } else if (pressureLevel < previousPressureLevel){
+             //Crossed Threshold going down. Fire event for pressureLevel
+            messageDisplay.textContent = `Pressure Level Decreased: ${pressureLevel}`;         
+            playRandomSoundEffect(getSoundEffect('settle'));  
+        }
+        previousPressure = player.pressure;
+        //Size Threshold checks
+        const sizeLevel = Math.floor((player.bellySize - player.bellyMinSize) / (sizeRange/10) ); //0-9
+        const previousSizeLevel = Math.floor((previousBellySize - player.bellyMinSize) / (sizeRange/10));
+
+        if(sizeLevel > previousSizeLevel){
+            //Size increased. Fire event for sizeLevel
+            messageDisplay.textContent =  `Size Level Increased: ${sizeLevel}`;
+        } else if (sizeLevel < previousSizeLevel){
+           //Size decreased. Fire event for sizeLevel
+           messageDisplay.textContent = `Size Level Decreased: ${sizeLevel}`;
+        }
+
+        previousBellySize = player.bellySize;
     }
 }, 50);
 
