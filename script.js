@@ -29,78 +29,113 @@ const player = {
     bellyGrowth: 0,
     bellyRecordSize: 100,
     bellyRecordGrowth: 0,
-    playerMoney: 0
+    playerMoney: 0,
+    maxPressure: 100
 };
+
+// Pump object -- this will be a prototype later
 const pump = {
     pumpStaticPressure: 5,
     pumpPressureDecayRate: 1,
     pumpStrokeVolume: 5
 }
+
+const pressureMessages = {
+    0:"\n",
+    1:"You feel a bit full.",
+    2:"You're feeling quite bloated.",
+    3:"Your midsection is tense.",
+    4:"Your skin is painfully taut...",
+    5:"You feel like you're about to burst...!"
+}
+
+const sizeMessages = {
+    0:"\n",
+    1:"Your gut has a slight bulge to it.",
+    2:"You're looking rather round.",
+    3:"Your belly spills out the front of your shirt.",
+    4:"Your belly could only be described as 'pregnant-looking.'",
+    5:"Your whole middle is dominated with your massive balloon-belly."
+}
+
 const bellySizeDisplay = document.getElementById('bellySize');
 const bellyGrowthDisplay = document.getElementById('bellyGrowth');
 const recordSizeDisplay = document.getElementById('recordSize');
 const recordGrowthDisplay = document.getElementById('recordGrowth');
 const pressureFill = document.getElementById('pressureFill');
 const messageDisplay = document.getElementById('message');
-const maxPressure = 100;
+const pressureText = document.getElementById('pressureText');
+const sizeText = document.getElementById('sizeText');
 
+//Gameplay functions
 function pumpAir() {
     player.pressure += pump.pumpStaticPressure;
-    if(player.pressure >= maxPressure){
+    if(player.pressure >= player.maxPressure){
     	playRandomSoundEffect(getSoundEffect('pop'));
         popBelly();
         return;
-    } else if(player.pressure >= maxPressure * 0.9){
+    } else if(player.pressure >= player.maxPressure * 0.9){
     	playRandomSoundEffect(getSoundEffect('pressure'));
-        messageDisplay.textContent = "Careful! Close to popping!"
+        messageDisplay.textContent = "Careful! Close to popping!" // TODO: integrate this w/the threshold system
     }
     inflateBelly();
     updatePressureBar();
     playRandomSoundEffect(getSoundEffect('pump'));
 }
 
+// some more game state stuff
 let previousPressure = 0;
-let previousBellySize = player.bellyMinSize; //initialize
+let previousBellySize = player.bellyMinSize;
+let sizeRange = player.bellySize*2
+
 // Pressure decay over time (using pump.pumpPressureDecayRate)
 setInterval(() => {
     if (player.pressure > 0) {
         player.pressure -= pump.pumpPressureDecayRate / 20;
-        if (player.pressure < maxPressure * 0.9){
-            messageDisplay.textContent = "";
-        }
         updatePressureBar();
-        //Pressure Threshold checks
+
+        //Threshold checks
         const pressureLevel = Math.floor(player.pressure / 20); //0-4
         const previousPressureLevel = Math.floor(previousPressure /20);
-
-        if(pressureLevel > previousPressureLevel){
-            //Crossed Threshold going up. Fire event for pressureLevel
-            messageDisplay.textContent = `Pressure Level Increased: ${pressureLevel}`;
-            playRandomSoundEffect(getSoundEffect('pressure'));
-        } else if (pressureLevel < previousPressureLevel){
-             //Crossed Threshold going down. Fire event for pressureLevel
-            messageDisplay.textContent = `Pressure Level Decreased: ${pressureLevel}`;         
-            playRandomSoundEffect(getSoundEffect('settle'));  
+        if(pressureLevel != previousPressureLevel){
+            pressureLevelChange(previousPressureLevel, pressureLevel);
         }
         previousPressure = player.pressure;
-        //Size Threshold checks
+
         const sizeLevel = Math.floor((player.bellySize - player.bellyMinSize) / (sizeRange/10) ); //0-9
         const previousSizeLevel = Math.floor((previousBellySize - player.bellyMinSize) / (sizeRange/10));
-
-        if(sizeLevel > previousSizeLevel){
-            //Size increased. Fire event for sizeLevel
-            messageDisplay.textContent =  `Size Level Increased: ${sizeLevel}`;
-        } else if (sizeLevel < previousSizeLevel){
-           //Size decreased. Fire event for sizeLevel
-           messageDisplay.textContent = `Size Level Decreased: ${sizeLevel}`;
+        if(sizeLevel != previousSizeLevel){
+            sizeLevelChange(previousSizeLevel,sizeLevel);
         }
-
         previousBellySize = player.bellySize;
     }
-}, 50);
+}, 20);
+
+function pressureLevelChange(oldLevel, newLevel){
+    if (newLevel < 0){
+        newLevel = 0 //just nipping this possibility in the bud 'cuz it displays -1 sometimes if you let it sit
+    }
+	if(newLevel > oldLevel){
+    	messageDisplay.textContent = `Pressure Level Increased: ${newLevel}`;
+        playRandomSoundEffect(getSoundEffect('pressure'));
+	} else if (newLevel < oldLevel){
+		messageDisplay.textContent = `Pressure Level Decreased: ${newLevel}`;         
+        playRandomSoundEffect(getSoundEffect('settle'));  
+	}
+    pressureText.textContent = pressureMessages[newLevel]
+}
+
+function sizeLevelChange(oldLevel, newLevel){
+	if(newLevel > oldLevel){
+    	messageDisplay.textContent =  `Size Level Increased: ${newLevel}`;
+	} else if (newLevel < oldLevel){
+		messageDisplay.textContent = `Size Level Decreased: ${newLevel}`;
+	}
+    sizeText.textContent = sizeMessages[newLevel]
+}
 
 function updatePressureBar() {
-    const percentage = Math.min((player.pressure / maxPressure) * 100, 100);
+    const percentage = Math.min((player.pressure / player.maxPressure) * 100, 100);
     pressureFill.style.width = percentage + "%";
 }
 
@@ -111,8 +146,8 @@ function inflateBelly(){
 }
 
 function updateDisplay() {
-    bellySizeDisplay.textContent = Math.round(player.bellySize);
-    bellyGrowthDisplay.textContent = Math.round(player.bellyGrowth);
+    bellySizeDisplay.textContent = Math.round(player.bellySize*100)/100;
+    bellyGrowthDisplay.textContent = Math.round(player.bellyGrowth*100)/100;
 
     // Update record displays only if new records achieved
     if (player.bellySize > player.bellyRecordSize) {
