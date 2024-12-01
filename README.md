@@ -12,5 +12,5 @@ Have fun(?)
 Planned:
 - Some type of progression system (streamer mechanic, new pumps)
 - Better UI
-- *Maybe* non-belly expansion??? idk.
+- *Maybe* non-belly expansion??? idk. would be hard but fun
 - visualization? hard "maybe"
